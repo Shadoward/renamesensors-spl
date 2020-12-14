@@ -235,10 +235,11 @@ def process(args, cmd):
     coldrop = ['Summary', 'Difference Start [s]', 'Session Start', 'Session End', 'Session Name', 'Session MaxGap', 'Sensor FileName']
     dfRename.drop(columns=coldrop, inplace=True)
     dfRename.dropna(subset=['SPL LineName'], inplace = True)
-    # https://stackoverflow.com/questions/59875334/add-incremental-value-for-duplicates
-    dftmp = dfRename[dfRename.duplicated(subset='SPL LineName', keep=False)]
-    dftmp['Incremental'] = dftmp.groupby(dftmp['SPL LineName']).cumcount() + 1
     dfRename['Incremental'] = None
+    # https://stackoverflow.com/questions/59875334/add-incremental-value-for-duplicates
+    # https://stackoverflow.com/questions/56137222/pandas-group-by-then-apply-throwing-a-warning # Try using .loc[row_indexer,col_indexer] = value instead
+    dftmp = dfRename[dfRename.duplicated(subset='SPL LineName', keep=False)]
+    dfRename.loc[dftmp.index, 'Incremental'] = dftmp.groupby(['SPL LineName']).cumcount() + 1 
     dfRename.update(dftmp)
     dfreverse = pd.DataFrame(columns = ["OldName", "NewName", "Incremental", "Sensor Type", "Vessel Name"])
     
